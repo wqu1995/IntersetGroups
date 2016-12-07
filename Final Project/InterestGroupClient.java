@@ -1,6 +1,7 @@
 import java.io.*; // Provides for system input and output through data
 // streams, serialization and the file system
 import java.net.*; // Provides the classes for implementing networking
+import java.util.Date;
 // applications
 
 /**
@@ -32,6 +33,9 @@ public class InterestGroupClient {
         // read a line form the standard input
         sentence = inFromUser.readLine();
 
+        //send LOGIN request
+        LogIn(outToServer);
+        AG(outToServer);
         // send the sentence read to the server
         outToServer.writeBytes(sentence + '\n');
 
@@ -43,5 +47,18 @@ public class InterestGroupClient {
 
         // close the socket
         clientSocket.close();
+    }
+
+    private static void AG(DataOutputStream outToServer) {
+
+    }
+
+    private static void LogIn(DataOutputStream outToServer) throws IOException {
+        Date now=new Date();
+        System.out.println(now);
+        outToServer.writeBytes("LOGIN LGP\r\n");
+        outToServer.writeBytes("Date: "+now+"\r\n");
+        outToServer.writeBytes("\r\n");
+
     }
 }

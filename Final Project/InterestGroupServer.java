@@ -3,6 +3,10 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by Yuege on 12/6/2016.
@@ -12,7 +16,7 @@ public class InterestGroupServer {
     {
         String clientSentence;
         String capitalizedSentence;
-
+        Date lastChecked;
         // get the port number assigned from the command line
         int lisPort = 7667;
 
@@ -34,6 +38,16 @@ public class InterestGroupServer {
             // read a line form the input stream
             clientSentence = inFromClient.readLine();
             switch (clientSentence){
+                case "LOGIN LGP":
+                    String date=inFromClient.readLine();
+                    DateFormat format = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+                    lastChecked = format.parse(date);
+                    clientSentence=inFromClient.readLine();
+                    if(clientSentence.isEmpty())
+                        outToClient.writeBytes("LGP 214 No Content\r\n\r\n");
+                    else
+                        outToClient.writeBytes("401 Bad Request\r\n\r\n");
+                    break;
 
 
             }
