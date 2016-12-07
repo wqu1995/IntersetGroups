@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -37,19 +38,54 @@ public class InterestGroupServer {
 
             // read a line form the input stream
             clientSentence = inFromClient.readLine();
-            switch (clientSentence){
-                case "LOGIN LGP":
+            switch (clientSentence.split(" ")[0]){
+                case "LOGIN":
                     String date=inFromClient.readLine();
                     DateFormat format = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
                     lastChecked = format.parse(date);
                     clientSentence=inFromClient.readLine();
                     if(clientSentence.isEmpty())
                         outToClient.writeBytes("LGP 214 No Content\r\n\r\n");
-                    else
-                        outToClient.writeBytes("401 Bad Request\r\n\r\n");
                     break;
+                case "AG":break;
+                case "SG":
+                    clientSentence=inFromClient.readLine();
+                    int[] subGroupIDs=new int[clientSentence.split(" ").length-1];
+                    for (int i=1,j=0;i<clientSentence.split(" ").length;i++)
+                        subGroupIDs[j++]=Integer.parseInt(clientSentence.split(" ")[i]);
+                    clientSentence=inFromClient.readLine();
+                    int[] readPostIDs=new int[clientSentence.split(" ").length-1];
+                    for (int i=1,j=0;i<clientSentence.split(" ").length;i++)
+                        readPostIDs[j++]=Integer.parseInt(clientSentence.split(" ")[i]);
+                    if(inFromClient.readLine().isEmpty())
+                        outToClient.writeBytes("LGP 207 OK\r\n");
+                    //get the numbers of new posts for each group, then send LGP 207 OK with the numbers
 
-
+                case "RG":
+                    int groupID=Integer.parseInt(clientSentence.split(" ")[1]);
+                    if(inFromClient.readLine().isEmpty()) {
+                        outToClient.writeBytes("LGP 207 OK\r\n");
+                        outToClient.writeBytes("posts subjects\r\n\r\n");
+                    }
+                    break;
+                case"RP":
+                    int postID=Integer.parseInt(clientSentence.split(" ")[1]);
+                    if(inFromClient.readLine().isEmpty()){
+                        outToClient.writeBytes("LGP 207 OK\r\n");
+                        outToClient.writeBytes("post subject\r\n");
+                        outToClient.writeBytes("post content\r\n\r\n");
+                    }
+                    break;
+                case"NP":
+                    if(inFromClient.readLine().isEmpty()){
+                        String subject=inFromClient.readLine();
+                        ArrayList<String> postContent=new ArrayList<>();
+                        String s=inFromClient.readLine();
+                        while (!s.isEmpty()){
+                            postContent.add(s);
+                            s=inFromClient.readLine();
+                        }
+                    }
             }
             // capitalize the sentence
             capitalizedSentence = clientSentence.toUpperCase() + '\n';
