@@ -58,20 +58,20 @@ public class InterestGroupServer {
                     for (int i=1,j=0;i<clientSentence.split(" ").length;i++)
                         readPostIDs[j++]=Integer.parseInt(clientSentence.split(" ")[i]);
                     if(inFromClient.readLine().isEmpty())
-                        outToClient.writeBytes("LGP 207 OK\r\n");
+                        outToClient.writeBytes("LGP 207 OK\r\n\r\n");
                     //get the numbers of new posts for each group, then send LGP 207 OK with the numbers
 
                 case "RG":
                     int groupID=Integer.parseInt(clientSentence.split(" ")[1]);
                     if(inFromClient.readLine().isEmpty()) {
-                        outToClient.writeBytes("LGP 207 OK\r\n");
+                        outToClient.writeBytes("LGP 207 OK\r\n\r\n");
                         outToClient.writeBytes("posts subjects\r\n\r\n");
                     }
                     break;
                 case"RP":
                     int postID=Integer.parseInt(clientSentence.split(" ")[1]);
                     if(inFromClient.readLine().isEmpty()){
-                        outToClient.writeBytes("LGP 207 OK\r\n");
+                        outToClient.writeBytes("LGP 207 OK\r\n\r\n");
                         outToClient.writeBytes("post subject\r\n");
                         outToClient.writeBytes("post content\r\n\r\n");
                     }
@@ -85,6 +85,25 @@ public class InterestGroupServer {
                             postContent.add(s);
                             s=inFromClient.readLine();
                         }
+                        outToClient.writeBytes("LGP 320 Created\r\n\r\n");
+                    }
+                    break;
+                case "CK":
+                    clientSentence=inFromClient.readLine();
+                    int[] subscribedGroupIDs=new int[clientSentence.split(" ").length-1];
+                    for (int i=1,j=0;i<clientSentence.split(" ").length;i++)
+                        subscribedGroupIDs[j++]=Integer.parseInt(clientSentence.split(" ")[i]);
+                    String date2=inFromClient.readLine();
+                    DateFormat format2 = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+                    lastChecked = format2.parse(date2);
+                    boolean newPost=false;
+                    if(newPost){
+                        outToClient.writeBytes("LGP 250 New Posts\r\n\r\n");
+                        outToClient.writeBytes("post subject\r\n");
+                        outToClient.writeBytes("post content\r\n\r\n");
+                    }
+                    else {
+                        outToClient.writeBytes("LGP 251 No Update\r\n\r\n");
                     }
             }
             // capitalize the sentence

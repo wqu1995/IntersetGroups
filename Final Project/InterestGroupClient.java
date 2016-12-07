@@ -41,6 +41,7 @@ public class InterestGroupClient {
         RG(outToServer,inFromServer);
         RP(outToServer,inFromServer);
         NP(outToServer,inFromServer);
+        CK(outToServer,inFromServer);
         // send the sentence read to the server
         outToServer.writeBytes(sentence + '\n');
 
@@ -54,16 +55,39 @@ public class InterestGroupClient {
         clientSocket.close();
     }
 
+    private static void CK(DataOutputStream outToServer, BufferedReader inFromServer) throws IOException {
+        Date now=new Date();
+        outToServer.writeBytes("CK LGP\r\n");
+        outToServer.writeBytes("Subscribed-GroupIDs: groupIDs\r\n");
+        outToServer.writeBytes("Date: "+now+"\r\n");
+        outToServer.writeBytes("\r\n");
+        if(inFromServer.readLine().equals("LGP 251 No Update"))
+            inFromServer.readLine();
+        else if(inFromServer.readLine().equals("LGP 250 New Posts")){
+            inFromServer.readLine();
+            String subject=inFromServer.readLine();
+            ArrayList<String> postContent=new ArrayList<>();
+            String s=inFromServer.readLine();
+            while (!s.isEmpty()){
+                postContent.add(s);
+                s=inFromServer.readLine();
+            }
+        }
+    }
+
     private static void NP(DataOutputStream outToServer, BufferedReader inFromServer) throws IOException {
         outToServer.writeBytes("NP GroupID IGP\r\n\r\n");
         outToServer.writeBytes("post subject\r\n");
         outToServer.writeBytes("post content\r\n\r\n");
+        if(inFromServer.readLine().equals("LGP 320 Created"))
+            inFromServer.readLine();
 
     }
 
     private static void RP(DataOutputStream outToServer, BufferedReader inFromServer) throws IOException {
         outToServer.writeBytes("RP PostID LGP\r\n\r\n");
         if(inFromServer.readLine().equals("LGP 207 OK")){
+            inFromServer.readLine();
             String subject=inFromServer.readLine();
             ArrayList<String> postContent=new ArrayList<>();
             String s=inFromServer.readLine();
@@ -77,6 +101,7 @@ public class InterestGroupClient {
     private static void RG(DataOutputStream outToServer,BufferedReader inFromServer) throws IOException {
         outToServer.writeBytes("RG GroupID LGP\r\n\r\n");
         if(inFromServer.readLine().equals("LGP 207 OK")){
+            inFromServer.readLine();
             ArrayList<String> postSubjects=new ArrayList<>();
             String s=inFromServer.readLine();
             while (!s.isEmpty()){
