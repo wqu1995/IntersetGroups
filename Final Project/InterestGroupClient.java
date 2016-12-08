@@ -60,6 +60,14 @@ public class InterestGroupClient {
             switch (sentence.split(" ")[0]){
                 case "ag":
                     AG(outToServer,inFromServer);// send the AG LGP request
+                    if(sentence.split(" ").length==1)
+                        ag(N);// take user to ag interface
+                    else if(sentence.split(" ").length==2) {
+                        int n=Integer.parseInt(sentence.split(" ")[1]);
+                        ag(n);
+                    }
+                    else
+                        System.out.println("Invalid command.");
                     break;
                 case "sg":
                     SG(outToServer,inFromServer);// send the SG LGP request
@@ -93,6 +101,12 @@ public class InterestGroupClient {
 
         // close the socket
         clientSocket.close();
+    }
+
+    private static void ag(int n) {
+        for(int i=1;i<=n;i++){
+            System.out.println(i+". ( ) groupname");
+        }
     }
 
     private static void CK(DataOutputStream outToServer, BufferedReader inFromServer) throws IOException {
