@@ -105,6 +105,9 @@ public class InterestGroupServer {
                     else {
                         outToClient.writeBytes("LGP 251 No Update\r\n\r\n");
                     }
+                    break;
+                default:
+                    outToClient.writeBytes("LGP 401 Bad Request\r\n\r\n");
             }
             // capitalize the sentence
             capitalizedSentence = clientSentence.toUpperCase() + '\n';

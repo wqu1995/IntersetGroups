@@ -1,8 +1,9 @@
-import java.io.*; // Provides for system input and output through data
-// streams, serialization and the file system
-import java.net.*; // Provides the classes for implementing networking
+import java.io.*;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
+
+// streams, serialization and the file system
 // applications
 
 /**
@@ -13,6 +14,17 @@ public class InterestGroupClient {
     {
         String sentence;
         String modifiedSentence;
+        boolean logIn=false;
+        final int N=5;
+        /*URL         workDirURL  = InterestGroupClient.class.getClassLoader().getResource("");
+        File userFile=new File(workDirURL.getFile());
+        userFile=new File(userFile.toString()+File.separator+"user5"+".json");
+        if(!userFile.exists())
+            userFile.createNewFile();*/
+
+        /*List<String> lines = Arrays.asList("The first line12", "The second line2");
+        Path file = Paths.get("the-file-name1.txt");
+        Files.write(file, lines, Charset.forName("UTF-8"));*/
 
         // get the server port form command line
         int lisPort = Integer.parseInt(argv[1]);
@@ -32,16 +44,44 @@ public class InterestGroupClient {
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
         // read a line form the standard input
-        sentence = inFromUser.readLine();
+        while (!logIn){
+            sentence = inFromUser.readLine();
+            if(sentence.split(" ").length!=2||!sentence.split(" ")[0].equals("login"))
+                System.out.println("Invalid command, you have not logged in yet.");
+            if(sentence.split(" ")[0].equals("login")) {
+                LogIn(outToServer, inFromServer,sentence.split(" ")[1]);
+                logIn=true;
+            }
+        }
 
-        //send LOGIN request
-        LogIn(outToServer,inFromServer);
-        AG(outToServer,inFromServer);
-        SG(outToServer,inFromServer);
-        RG(outToServer,inFromServer);
-        RP(outToServer,inFromServer);
-        NP(outToServer,inFromServer);
-        CK(outToServer,inFromServer);
+        while(logIn){
+            //send LOGIN request
+            sentence=inFromUser.readLine();
+            switch (sentence.split(" ")[0]){
+                case "ag":
+                    AG(outToServer,inFromServer);// send the AG LGP request
+                    break;
+                case "sg":
+                    SG(outToServer,inFromServer);// send the SG LGP request
+                    break;
+                case "rg":
+                    RG(outToServer,inFromServer);// send the RG LGP request
+                    break;
+                case "logout":
+                    logIn=false;
+                    break;
+                default:
+                    System.out.println("Invalid Command.");
+            }
+
+
+
+            RP(outToServer,inFromServer);
+            NP(outToServer,inFromServer);
+            CK(outToServer,inFromServer);
+        }
+
+        sentence = inFromUser.readLine();
         // send the sentence read to the server
         outToServer.writeBytes(sentence + '\n');
 
@@ -123,7 +163,20 @@ public class InterestGroupClient {
         outToServer.writeBytes("AG  LGP\r\n\r\n");
     }
 
-    private static void LogIn(DataOutputStream outToServer,BufferedReader inFromServer) throws IOException {
+    private static void LogIn(DataOutputStream outToServer,BufferedReader inFromServer,String userID) throws IOException {
+        try {
+            BufferedReader reader=new BufferedReader(new FileReader(userID+".txt"));
+            String s1=reader.readLine();
+            String s2=reader.readLine();
+            System.out.println(s1+"\r\n"+s2);
+        }
+        catch (FileNotFoundException e){
+            PrintWriter writer = new PrintWriter(userID+".txt", "UTF-8");
+            writer.println("SubscribedGroupIDs: ");
+            writer.println("ReadPostIDs: ");
+            writer.close();
+        }
+
         Date now=new Date();
         outToServer.writeBytes("LOGIN LGP\r\n");
         outToServer.writeBytes("Date: "+now+"\r\n");
