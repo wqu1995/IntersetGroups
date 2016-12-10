@@ -47,7 +47,10 @@ public class InterestGroupServer {
                     if(clientSentence.isEmpty())
                         outToClient.writeBytes("IGP 214 No Content\r\n\r\n");
                     break;
-                case "AG":break;
+                case "AG":
+                    outToClient.writeBytes("IGP 310 All Groups\r\n\r\n");
+                    outToClient.writeBytes("Groups row by row\r\n\r\n");
+                    break;
                 case "SG":
                     clientSentence=inFromClient.readLine();
                     int[] subGroupIDs=new int[clientSentence.split(" ").length-1];
@@ -59,7 +62,7 @@ public class InterestGroupServer {
                         readPostIDs[j++]=Integer.parseInt(clientSentence.split(" ")[i]);
                     if(inFromClient.readLine().isEmpty())
                         outToClient.writeBytes("IGP 207 OK\r\n\r\n");
-                    //get the numbers of new posts for each group, then send IGP 207 OK with the numbers
+                    //get the numbers of new posts for each group, then send IGP 207 OK with the numbers on one line seperated by space.
 
                 case "RG":
                     int groupID=Integer.parseInt(clientSentence.split(" ")[1]);
