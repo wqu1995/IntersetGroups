@@ -18,7 +18,7 @@ public class InterestGroupClient {
     static BufferedReader inFromUser;
     static DataOutputStream outToServer;
     static BufferedReader inFromServer;
-    static String groupName;
+    static String groupName,userName;
     static final int N=5;
     public static void main(String argv[]) throws Exception
     {
@@ -60,7 +60,8 @@ public class InterestGroupClient {
                 System.out.println("Invalid command, you have not logged in yet.");
             else if(sentence.split(" ")[0].equals("login")) {
                 // read user info and store them into two sets.
-                LogIn(sentence.split(" ")[1]);
+                userName=sentence.split(" ")[1];
+                LogIn(userName);
                 // send the AG IGP request and store all the groups' info in groups array
                 AG();
                 logIn=true;
@@ -121,8 +122,6 @@ public class InterestGroupClient {
                     }
                     else
                         System.out.println("Invalid command.");
-
-
                     break;
                 case "logout":
                     logIn=false;
@@ -130,86 +129,115 @@ public class InterestGroupClient {
                 default:
                     System.out.println("Invalid Command.");
             }
-
-
-            RP();
-            NP();
-            CK();
         }
-
-        sentence = inFromUser.readLine();
-        // send the sentence read to the server
-        outToServer.writeBytes(sentence + '\n');
-
-        // get the reply from the server
-        modifiedSentence = inFromServer.readLine();
-
-        // print the returned sentence
-        System.out.println("FROM SERVER: " + modifiedSentence);
-
         // close the socket
         clientSocket.close();
     }
 
     private static void rg(int n) throws IOException {
         boolean showedAll=false,rg=true,wrongIndex=false;
-        int i,currentN=n;
+        int i=1,currentN=n, j, newPostNum=0;
+        ArrayList<String> unreadSubjects=new ArrayList<>(),readSubjects=new ArrayList<>();
+        for (String post:postSubjects){
+            if(readPosts.contains(post.split(" ")[0])){
+                readSubjects.add(post);
+            }
+            else {
+                unreadSubjects.add(post);
+                newPostNum++;
+            }
+        }
         System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
         //Check if there is new post from subscribed groups.
         String sTemp=CK();
         if(sTemp!=null)
             System.out.println(sTemp);
-        for( i=1;i<=currentN;i++){
-            if(subsGroupsIDs.size()==i-1){
+        for( j=1;j<=currentN;j++,i++){
+            if(postSubjects.size()==i-1){
                 showedAll=true;
                 break;
             }
-            if(Integer.parseInt(newPosts.get(i-1))==0)
-                System.out.println(i+"         "+subsGroupsNames.get(i-1));
+            if(i>newPostNum)
+                System.out.println(j+".     "+readSubjects.get(i-newPostNum-1));
             else
-                System.out.println(i+"    "+newPosts.get(i-1)+"   "+subsGroupsNames.get(i-1));
+                System.out.println(j+".N    "+unreadSubjects.get(i-1));
         }
         while (rg){
             String command=inFromUser.readLine();
             switch (command.split(" ")[0].toLowerCase()){
-                case "u":
-                    try {
-                        ArrayList temporaryGroups=new ArrayList();
-                        for(String s:command.substring(2,command.length()).split(" ")) {
-                            if(Integer.parseInt(s)>i||Integer.parseInt(s)<=i-currentN){
-                                System.out.println("group not in the list!");
-                                wrongIndex=true;
-                                break;
-                            }
-                            temporaryGroups.add(Integer.parseInt(s));
-                        }
-                        if(wrongIndex) {
-                            temporaryGroups.clear();
-                            wrongIndex=false;
+                case "r":
+                    if(command.split(" ").length!=2) {
+                        System.out.println("Invalid Command.");
+                        break;
+                    }
+                    String num=command.split(" ")[1];
+                    if(num.length()==1){
+                        int index=Integer.parseInt(num);
+                        int trueIndex=i-currentN+index-1;
+                        if(trueIndex>newPostNum)
                             break;
-                        }
-                        // If group indices are valid, add it to user file.
-                        for(Object s:temporaryGroups) {
-                            newPosts.remove((int)(s)-1);
-                            String groupToBeRemoved=subsGroupsNames.remove((int)(s)-1);
-                            int IDtobeRemoved=groups.indexOf(groupToBeRemoved)+1;
-                            subsGroupsIDs.remove(IDtobeRemoved+"");
-                        }
-                        System.out.println("You have successfully unsubscribed these groups. Please enter next command.");
-                        for( int j=i-currentN+1;j<=i;j++){
-                            if(subsGroupsIDs.size()==j-1){
-                                showedAll=true;
-                                break;
+                        else {
+                            String post=unreadSubjects.remove(trueIndex-1);
+                            readSubjects.add(0,post);
+                            readPosts.add(post.split(" ")[0]);
+                            newPostNum--;
+                            System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
+                            for( j=1;j<=currentN;j++){
+                                if(trueIndex-index+j>newPostNum)
+                                    System.out.println(j+".     "+readSubjects.get(trueIndex-index+j-newPostNum-1));
+                                else
+                                    System.out.println(j+".N    "+unreadSubjects.get(trueIndex-index+j-1));
                             }
-                            if(Integer.parseInt(newPosts.get(j-1))==0)
-                                System.out.println(j+"         "+subsGroupsNames.get(j-1));
-                            else
-                                System.out.println(j+"    "+newPosts.get(j-1)+"   "+subsGroupsNames.get(j-1));
                         }
                     }
-                    catch (Exception e){
-                        System.out.println("Invalid command.");
-                        break;
+                    else if(num.length()==3){
+                        int firstIndex=Integer.parseInt(num.substring(0,1));
+                        int lastIndex=Integer.parseInt(num.substring(2,3));
+                        int trueIndex1=i-currentN+firstIndex-1;
+                        int trueIndex2=i-currentN+lastIndex-1;
+                        if(trueIndex2>newPostNum)
+                            break;
+                        else {
+                            String[] posts=new String[trueIndex2-trueIndex1+1];
+                            for(int q=0;q<posts.length;q++){
+                                posts[q]=unreadSubjects.remove(trueIndex1+q-1);
+                            }
+                            for (String s:posts){
+                                readSubjects.add(0,s);
+                                readPosts.add(s.split(" ")[0]);
+                                newPostNum--;
+                            }
+                            System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
+                            for( j=1;j<=currentN;j++){
+                                if(trueIndex1-firstIndex+j>newPostNum)
+                                    System.out.println(j+".     "+readSubjects.get(trueIndex1-firstIndex+j-newPostNum-1));
+                                else
+                                    System.out.println(j+".N    "+unreadSubjects.get(trueIndex1-firstIndex+j-1));
+                            }
+                        }
+                    }
+                    else {
+                        System.out.println("Invalid Command.");
+                    }
+                    break;
+                case "p":
+                    String postContent="Group: "+groupName+"\r\n";
+                    System.out.println("Please enter the subject of the post: ");
+                    String subject=inFromUser.readLine();
+                    postContent=postContent+"Subject: "+subject+"\r\nAuthor: "+userName+"\r\nDate: "+new Date()+"\r\n\r\n";
+                    System.out.println("Please enter content of the post, it ends by a dot by itself on a line");
+                    String contentLine=inFromUser.readLine();
+                    while (!contentLine.equals("."))
+                        postContent=postContent+contentLine+"\r\n";
+                    postContent=postContent+".\r\n";
+                    NP(postContent);
+                    System.out.println("New post posted!");
+                    System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
+                    for( j=1;j<=currentN;j++){
+                        if(i-currentN+j-1>newPostNum)
+                            System.out.println(j+".     "+readSubjects.get(i-currentN+j-newPostNum-2));
+                        else
+                            System.out.println(j+".N    "+unreadSubjects.get(i-currentN+j-2));
                     }
                     break;
                 case "n":
@@ -221,26 +249,81 @@ public class InterestGroupClient {
                         break;
                     }
                     System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
-                    for( int j=i+1;j<=currentN+i;j++){
-                        if(subsGroupsIDs.size()==j-1){
+                    for( j=1;j<=currentN;j++,i++){
+                        if(postSubjects.size()==i-1){
                             showedAll=true;
                             break;
                         }
-                        if(Integer.parseInt(newPosts.get(j-1))==0)
-                            System.out.println(j+"         "+subsGroupsNames.get(j-1));
+                        if(i>newPostNum)
+                            System.out.println(j+".     "+readSubjects.get(i-newPostNum-1));
                         else
-                            System.out.println(j+"    "+newPosts.get(j-1)+"   "+subsGroupsNames.get(j-1));
+                            System.out.println(j+".N    "+unreadSubjects.get(i-1));
                     }
-                    i=i+currentN;
                     break;
                 case "q":
                     rg=false;
                     break;
                 default:
-                    System.out.println("Invalid command.");break;
+                    try {
+                        if(command.split(" ").length>1){
+                            System.out.println("Invalid command.");break;
+                        }
+                        String postToRead;
+                        int id=Integer.parseInt(command);
+                        int trueID=i-currentN+id-1;
+                        if(trueID>newPostNum)
+                            postToRead=readSubjects.get(trueID-newPostNum-1);
+                        else
+                            postToRead=unreadSubjects.get(trueID-1);
+                        RP(postToRead.split(" ")[0]);
+                        rp(currentN);
+                        System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
+                        for( j=1;j<=currentN;j++){
+                            if(trueID-id+j>newPostNum)
+                                System.out.println(j+".     "+readSubjects.get(trueID-id+j-newPostNum-1));
+                            else
+                                System.out.println(j+".N    "+unreadSubjects.get(trueID-id+j-1));
+                        }
+                    }
+                   catch (Exception e){
+                       System.out.println("Invalid command.");break;
+                   }
+                   break;
             }
         }
-        System.out.println("Exit Subscribed groups. Please enter one of the commands: \"ag\",\"sg\",\"rg\",\"help\",or \"logout\"");
+        System.out.println("Exit read group. Please enter one of the commands: \"ag\",\"sg\",\"rg\",\"help\",or \"logout\"");
+    }
+
+    private static void rp(int currentN) throws IOException {
+        boolean rp=true,showedAll=false;
+        System.out.println("Read post. two sub-sub-commands: n,q");
+        int line=0;
+        for(int q=1;q<=currentN;q++,line++) {
+            if (line==contents.size()-1) {
+                showedAll = true;
+                break;
+            }
+            System.out.println(contents.get(line));
+        }
+        String subcommand=inFromUser.readLine();
+        while (rp){
+            switch (subcommand){
+                case "n":
+                    if(showedAll) {
+                        rp = false;break;
+                    }
+                    for(int q=1;q<=currentN;q++,line++) {
+                        if (line==contents.size()-1) {
+                            showedAll = true;
+                            break;
+                        }
+                        System.out.println(contents.get(line));
+                    }
+                    break;
+                case "q":
+                    rp=false;break;
+            }
+        }
     }
 
     private static void sg(int n) throws IOException {
@@ -268,7 +351,7 @@ public class InterestGroupClient {
                     try {
                         ArrayList temporaryGroups=new ArrayList();
                         for(String s:command.substring(2,command.length()).split(" ")) {
-                            if(Integer.parseInt(s)>i||Integer.parseInt(s)<=i-currentN){
+                            if(Integer.parseInt(s)>=i||Integer.parseInt(s)<i-currentN){
                                 System.out.println("group not in the list!");
                                 wrongIndex=true;
                                 break;
@@ -288,7 +371,7 @@ public class InterestGroupClient {
                             subsGroupsIDs.remove(IDtobeRemoved+"");
                         }
                         System.out.println("You have successfully unsubscribed these groups. Please enter next command.");
-                        for( int j=i-currentN+1;j<=i;j++){
+                        for( int j=i-currentN;j<i;j++){
                             if(subsGroupsIDs.size()==j-1){
                                 showedAll=true;
                                 break;
@@ -313,7 +396,7 @@ public class InterestGroupClient {
                         break;
                     }
                     System.out.println("Subscribed Groups. Please enter one of the subcommands: u,n,q");
-                    for( int j=i+1;j<=currentN+i;j++){
+                    for( int j=i;j<currentN+i;j++){
                         if(subsGroupsIDs.size()==j-1){
                             showedAll=true;
                             break;
@@ -361,7 +444,7 @@ public class InterestGroupClient {
                     try {
 
                         for(String s:command.substring(2,command.length()).split(" ")) {
-                            if(Integer.parseInt(s)>i||Integer.parseInt(s)<=i-currentN){
+                            if(Integer.parseInt(s)>=i||Integer.parseInt(s)<i-currentN){
                                 System.out.println("group not in the list!");
                                 wrongIndex=true;
                                 break;
@@ -382,6 +465,12 @@ public class InterestGroupClient {
                         }
                         temporaryGroups.clear();
                         System.out.println("You have successfully subscribed these groups. Please enter next command.");
+                        for( int q=i-currentN;q<i;q++){
+                            if(subsGroupsIDs.contains(q+""))
+                                System.out.println(q+". (s) "+groups.get(q-1));
+                            else
+                                System.out.println(q+". ( ) "+groups.get(q-1));
+                        }
                     }
                     catch (Exception e){
                         System.out.println("Invalid command.");
@@ -391,7 +480,7 @@ public class InterestGroupClient {
                 case "u":
                     try {
                         for(String s:command.substring(2,command.length()).split(" ")) {
-                            if(Integer.parseInt(s)>i||Integer.parseInt(s)<=i-currentN){
+                            if(Integer.parseInt(s)>=i||Integer.parseInt(s)<i-currentN){
                                 System.out.println("group not in the list!");
                                 wrongIndex=true;
                                 break;
@@ -412,6 +501,12 @@ public class InterestGroupClient {
                         }
                         temporaryGroups.clear();
                         System.out.println("You have successfully unsubscribed these groups. Please enter next command.");
+                        for( int q=i-currentN;q<i;q++){
+                            if(subsGroupsIDs.contains(q+""))
+                                System.out.println(q+". (s) "+groups.get(q-1));
+                            else
+                                System.out.println(q+". ( ) "+groups.get(q-1));
+                        }
                     }
                     catch (Exception e){
                         System.out.println("Invalid command.");
@@ -427,7 +522,7 @@ public class InterestGroupClient {
                         break;
                     }
                     System.out.println("All Groups. Please enter one of the subcommands: s,u,n,q");
-                    for( int j=i+1;j<=currentN+i;j++){
+                    for( int j=i;j<currentN+i;j++){
                         if(groups.size()==j-1){
                             showedAll=true;
                             break;
@@ -470,24 +565,22 @@ public class InterestGroupClient {
         return null;
     }
 
-    private static void NP() throws IOException {
+    private static void NP(String post) throws IOException {
         outToServer.writeBytes("NP GroupID IGP\r\n\r\n");
-        outToServer.writeBytes("post subject\r\n");
-        outToServer.writeBytes("post content\r\n\r\n");
+        outToServer.writeBytes(post+"\r\n\r\n");
         if(inFromServer.readLine().equals("IGP 320 Created"))
             inFromServer.readLine();
 
     }
 
-    private static void RP() throws IOException {
-        outToServer.writeBytes("RP PostID IGP\r\n\r\n");
+    private static void RP(String postID) throws IOException {
+        outToServer.writeBytes("RP "+postID+" IGP\r\n\r\n");
         if(inFromServer.readLine().equals("IGP 207 OK")){
             inFromServer.readLine();
-            String subject=inFromServer.readLine();
-            ArrayList<String> postContent=new ArrayList<>();
+            contents=new ArrayList<>();
             String s=inFromServer.readLine();
             while (!s.isEmpty()){
-                    postContent.add(s);
+                    contents.add(s);
                 s=inFromServer.readLine();
             }
         }
@@ -499,6 +592,7 @@ public class InterestGroupClient {
         outToServer.writeBytes("RG "+gname+" IGP\r\n\r\n");
         if(inFromServer.readLine().equals("IGP 207 OK")){
             inFromServer.readLine();
+            postSubjects=new ArrayList<>();
             String s=inFromServer.readLine();
             while (!s.isEmpty()){
                 postSubjects.add(s);
@@ -518,6 +612,7 @@ public class InterestGroupClient {
         for(String s:readPosts)
             readP=readP+s+" ";
         outToServer.writeBytes("Read-Posts: "+readP+"\r\n\r\n");
+        newPosts=new ArrayList<>();
         if(inFromServer.readLine().equals("IGP 207 OK")){
             inFromServer.readLine();
             String newP=inFromServer.readLine();

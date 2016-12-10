@@ -81,10 +81,9 @@ public class InterestGroupServer {
                     break;
                 case"NP":
                     if(inFromClient.readLine().isEmpty()){
-                        String subject=inFromClient.readLine();
                         ArrayList<String> postContent=new ArrayList<>();
                         String s=inFromClient.readLine();
-                        while (!s.isEmpty()){
+                        while (!s.equals(".")){
                             postContent.add(s);
                             s=inFromClient.readLine();
                         }
