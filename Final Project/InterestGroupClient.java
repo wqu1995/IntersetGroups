@@ -652,11 +652,13 @@ public class InterestGroupClient {
         try {
             BufferedReader reader=new BufferedReader(new FileReader(userID+".txt"));
             String s1=reader.readLine();
-            for (String s:s1.split(" "))
-                subsGroupsIDs.add(s);
+            if(!s1.isEmpty())
+                for (String s:s1.split(" "))
+                    subsGroupsIDs.add(s);
             String s2=reader.readLine();
-            for (String s:s2.split(" "))
-                readPosts.add(s);
+            if(!s2.isEmpty())
+                for (String s:s2.split(" "))
+                    readPosts.add(s);
         }
         catch (FileNotFoundException e){
             PrintWriter writer = new PrintWriter(userID+".txt", "UTF-8");
@@ -667,8 +669,7 @@ public class InterestGroupClient {
 
         Date now=new Date();
         outToServer.writeBytes("LOGIN IGP\r\n");
-        outToServer.writeBytes("Date: "+now+"\r\n");
-        outToServer.writeBytes("\r\n");
+        outToServer.writeBytes("Date: "+now+"\r\n\r\n");
         if(inFromServer.readLine().equals("IGP 214 No Content"))
             inFromServer.readLine();
     }
