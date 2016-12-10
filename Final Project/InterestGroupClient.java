@@ -136,9 +136,10 @@ public class InterestGroupClient {
                     writer.println(readPo);
                     writer.close();
                     System.out.println("Exit Interest Group.");
+                    outToServer.writeBytes("logout\r\n\r\n");
                     break;
                 default:
-                    System.out.println("Invalid Command.");
+                    System.out.println("Invalid Command.");break;
             }
         }
         // close the socket
