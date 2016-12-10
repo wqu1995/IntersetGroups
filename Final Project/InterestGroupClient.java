@@ -125,6 +125,17 @@ public class InterestGroupClient {
                     break;
                 case "logout":
                     logIn=false;
+                    PrintWriter writer = new PrintWriter(userName+".txt", "UTF-8");
+                    String subG="";
+                    for(String s:subsGroupsIDs)
+                        subG=subG+s+" ";
+                    writer.println(subG);
+                    String readPo="";
+                    for (String s:readPosts)
+                        readPo=readPo+s+" ";
+                    writer.println(readPo);
+                    writer.close();
+                    System.out.println("Exit Interest Group.");
                     break;
                 default:
                     System.out.println("Invalid Command.");
