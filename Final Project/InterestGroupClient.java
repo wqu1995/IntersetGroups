@@ -14,9 +14,11 @@ public class InterestGroupClient {
             contents=new ArrayList<>();
     static ArrayList<String> subsGroupsIDs=new ArrayList<>(),subsGroupsNames=new ArrayList<>();
     static ArrayList<String> readPosts=new ArrayList<>(),newPosts=new ArrayList<>();
+    static ArrayList<String> postSubjects=new ArrayList<>();
     static BufferedReader inFromUser;
     static DataOutputStream outToServer;
     static BufferedReader inFromServer;
+    static String groupName;
     static final int N=5;
     public static void main(String argv[]) throws Exception
     {
@@ -89,7 +91,7 @@ public class InterestGroupClient {
                     // send the SG IGP request
                     SG();
                     if(sentence.split(" ").length==1)
-                        sg(N);// take user to ag interface
+                        sg(N);// take user to sg interface
                     else if(sentence.split(" ").length==2) {
                         int n=Integer.parseInt(sentence.split(" ")[1]);
                         sg(n);
@@ -98,7 +100,29 @@ public class InterestGroupClient {
                         System.out.println("Invalid command.");
                     break;
                 case "rg":
-                    RG();// send the RG IGP request
+                    if(sentence.split(" ").length==2) {
+                        groupName=sentence.split(" ")[1];
+                        // send the RG IGP request
+                        if(!RG(groupName)) {
+                            System.out.println("Wrong group name.");
+                            break;
+                        }
+                        rg(N);// take user to rg interface
+                    }
+                    else if(sentence.split(" ").length==3) {
+                        groupName=sentence.split(" ")[1];
+                        // send the RG IGP request
+                        if(!RG(groupName)) {
+                            System.out.println("Wrong group name.");
+                            break;
+                        }
+                        int n=Integer.parseInt(sentence.split(" ")[2]);
+                        rg(n);
+                    }
+                    else
+                        System.out.println("Invalid command.");
+
+
                     break;
                 case "logout":
                     logIn=false;
@@ -125,6 +149,98 @@ public class InterestGroupClient {
 
         // close the socket
         clientSocket.close();
+    }
+
+    private static void rg(int n) throws IOException {
+        boolean showedAll=false,rg=true,wrongIndex=false;
+        int i,currentN=n;
+        System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
+        //Check if there is new post from subscribed groups.
+        String sTemp=CK();
+        if(sTemp!=null)
+            System.out.println(sTemp);
+        for( i=1;i<=currentN;i++){
+            if(subsGroupsIDs.size()==i-1){
+                showedAll=true;
+                break;
+            }
+            if(Integer.parseInt(newPosts.get(i-1))==0)
+                System.out.println(i+"         "+subsGroupsNames.get(i-1));
+            else
+                System.out.println(i+"    "+newPosts.get(i-1)+"   "+subsGroupsNames.get(i-1));
+        }
+        while (rg){
+            String command=inFromUser.readLine();
+            switch (command.split(" ")[0].toLowerCase()){
+                case "u":
+                    try {
+                        ArrayList temporaryGroups=new ArrayList();
+                        for(String s:command.substring(2,command.length()).split(" ")) {
+                            if(Integer.parseInt(s)>i||Integer.parseInt(s)<=i-currentN){
+                                System.out.println("group not in the list!");
+                                wrongIndex=true;
+                                break;
+                            }
+                            temporaryGroups.add(Integer.parseInt(s));
+                        }
+                        if(wrongIndex) {
+                            temporaryGroups.clear();
+                            wrongIndex=false;
+                            break;
+                        }
+                        // If group indices are valid, add it to user file.
+                        for(Object s:temporaryGroups) {
+                            newPosts.remove((int)(s)-1);
+                            String groupToBeRemoved=subsGroupsNames.remove((int)(s)-1);
+                            int IDtobeRemoved=groups.indexOf(groupToBeRemoved)+1;
+                            subsGroupsIDs.remove(IDtobeRemoved+"");
+                        }
+                        System.out.println("You have successfully unsubscribed these groups. Please enter next command.");
+                        for( int j=i-currentN+1;j<=i;j++){
+                            if(subsGroupsIDs.size()==j-1){
+                                showedAll=true;
+                                break;
+                            }
+                            if(Integer.parseInt(newPosts.get(j-1))==0)
+                                System.out.println(j+"         "+subsGroupsNames.get(j-1));
+                            else
+                                System.out.println(j+"    "+newPosts.get(j-1)+"   "+subsGroupsNames.get(j-1));
+                        }
+                    }
+                    catch (Exception e){
+                        System.out.println("Invalid command.");
+                        break;
+                    }
+                    break;
+                case "n":
+                    sTemp=CK();
+                    if(sTemp!=null)
+                        System.out.println(sTemp);
+                    if(showedAll) {
+                        rg = false;
+                        break;
+                    }
+                    System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
+                    for( int j=i+1;j<=currentN+i;j++){
+                        if(subsGroupsIDs.size()==j-1){
+                            showedAll=true;
+                            break;
+                        }
+                        if(Integer.parseInt(newPosts.get(j-1))==0)
+                            System.out.println(j+"         "+subsGroupsNames.get(j-1));
+                        else
+                            System.out.println(j+"    "+newPosts.get(j-1)+"   "+subsGroupsNames.get(j-1));
+                    }
+                    i=i+currentN;
+                    break;
+                case "q":
+                    rg=false;
+                    break;
+                default:
+                    System.out.println("Invalid command.");break;
+            }
+        }
+        System.out.println("Exit Subscribed groups. Please enter one of the commands: \"ag\",\"sg\",\"rg\",\"help\",or \"logout\"");
     }
 
     private static void sg(int n) throws IOException {
@@ -377,18 +493,19 @@ public class InterestGroupClient {
         }
     }
 
-    private static void RG() throws IOException {
-        outToServer.writeBytes("RG GroupID IGP\r\n\r\n");
+    private static boolean RG(String gname) throws IOException {
+        if(!groups.contains(gname))
+            return false;
+        outToServer.writeBytes("RG "+gname+" IGP\r\n\r\n");
         if(inFromServer.readLine().equals("IGP 207 OK")){
             inFromServer.readLine();
-            ArrayList<String> postSubjects=new ArrayList<>();
             String s=inFromServer.readLine();
             while (!s.isEmpty()){
-                for(String s1:s.split(" "))
-                    postSubjects.add(s1);
+                postSubjects.add(s);
                 s=inFromServer.readLine();
             }
         }
+        return true;
     }
 
     private static void SG() throws IOException {

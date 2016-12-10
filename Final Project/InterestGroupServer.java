@@ -68,7 +68,7 @@ public class InterestGroupServer {
                     int groupID=Integer.parseInt(clientSentence.split(" ")[1]);
                     if(inFromClient.readLine().isEmpty()) {
                         outToClient.writeBytes("IGP 207 OK\r\n\r\n");
-                        outToClient.writeBytes("posts subjects\r\n\r\n");
+                        outToClient.writeBytes("posts subjects line by line\r\n\r\n");
                     }
                     break;
                 case"RP":
