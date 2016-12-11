@@ -108,7 +108,7 @@ public class InterestGroupClient {
                         groupName=sentence.split(" ")[1];
                         // send the RG IGP request
                         if(!RG(groupName)) {
-                            System.out.println("Wrong group name.");
+                            System.out.println("Wrong group name, or you have not subscribed this group.");
                             break;
                         }
                         rg(N);// take user to rg interface
@@ -117,7 +117,7 @@ public class InterestGroupClient {
                         groupName=sentence.split(" ")[1];
                         // send the RG IGP request
                         if(!RG(groupName)) {
-                            System.out.println("Wrong group name.");
+                            System.out.println("Wrong group name, or you have not subscribed this group.");
                             break;
                         }
                         int n=Integer.parseInt(sentence.split(" ")[2]);
