@@ -200,8 +200,9 @@ public class InterestGroupClient {
                             trueIndex=i-currentN+index-1;
                         else
                             trueIndex=index;
-                        if(trueIndex>newPostNum)
+                        if(trueIndex>newPostNum) {
                             break;
+                        }
                         else {
                             String post=unreadSubjects.remove(trueIndex-1);
                             readSubjects.add(0,post);
@@ -237,12 +238,13 @@ public class InterestGroupClient {
                             trueIndex2=i-currentN+lastIndex-1;
                         else
                             trueIndex2=lastIndex;
-                        if(trueIndex2>newPostNum)
+                        if(trueIndex1>newPostNum) {
                             break;
+                        }
                         else {
                             String[] posts=new String[trueIndex2-trueIndex1+1];
                             for(int q=0;q<posts.length;q++){
-                                posts[q]=unreadSubjects.remove(trueIndex1+q-1);
+                                posts[q]=unreadSubjects.remove(trueIndex2-q-1);
                             }
                             for (String s:posts){
                                 readSubjects.add(0,s);
