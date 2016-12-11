@@ -707,10 +707,19 @@ public class InterestGroupClient {
         }
         else if(inFromServer.readLine().equals("IGP 250 New Posts")){
             inFromServer.readLine();
+            ArrayList<String> alerts=new ArrayList<>();
             String subject=inFromServer.readLine();
-            String group=inFromServer.readLine();
-            inFromServer.readLine();
-            return "There is a new post: "+subject+" in group: "+group;
+            String group="";
+            while(!subject.isEmpty()){
+                subject=inFromServer.readLine();
+                group=inFromServer.readLine();
+                alerts.add("There is a new post: "+subject+" in group: "+group);
+                subject=inFromServer.readLine();
+            }
+            String alert="";
+            for (String s:alerts)
+                alert=alert+s+"\r\n";
+            return alert;
         }
         return null;
     }
