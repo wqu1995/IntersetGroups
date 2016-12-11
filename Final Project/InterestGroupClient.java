@@ -718,6 +718,7 @@ public class InterestGroupClient {
                 contents.add(s);
                 s=inFromServer.readLine();
             }
+            inFromServer.readLine();
         }
     }
 
@@ -751,11 +752,9 @@ public class InterestGroupClient {
         String temp = inFromServer.readLine();
         System.out.println(temp);
         if(temp.equals("IGP 207 OK")){
-            String a =inFromServer.readLine();
-
-
+            inFromServer.readLine();
             String newP=inFromServer.readLine();
-            System.out.println(newPosts);
+            System.out.println(newP);
             for (String s:newP.split(" ")){
                 newPosts.add(s);
             }
