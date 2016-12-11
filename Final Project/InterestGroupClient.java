@@ -76,11 +76,11 @@ public class InterestGroupClient {
                     System.out.println("\tu: Unsubscribe to groups");
                     System.out.println("\tn: List the next N discussion groups ");
                     System.out.println("\tq: Exits from the ag command");
-                    System.out.println("sg: Take an argument of N, select N subscribe groups at a time \nand list names of these subscribe groups ");
+                    System.out.println("sg: Take an argument of N, select N subscribe groups at a time \n\tand list names of these subscribe groups ");
                     System.out.println("\tu: Unsubscribe to subscibe groups");
                     System.out.println("\tn: List the next N discussion subscibe groups ");
                     System.out.println("\tq: Exits from the sg command");
-                    System.out.println("rg: Take one mandatory argument gname and an optional argument\n select the special group and list all the posts in the group ");
+                    System.out.println("rg: Take one mandatory argument gname and an optional argument\n\tselect the special group and list all the posts in the group ");
                     System.out.println("\t[id]: list one special post and read the content of it");
                     System.out.println("\t\tn: display at most N more lines of the post content");
                     System.out.println("\t\tq: quit displaying the post content ");
