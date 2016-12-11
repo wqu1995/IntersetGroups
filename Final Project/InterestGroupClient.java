@@ -88,7 +88,10 @@ public class InterestGroupClient {
                         System.out.println("Invalid command.");
                     break;
                 case "sg":
-
+                    if(subsGroupsIDs.isEmpty()) {
+                        System.out.println("You haven't subscribed any groups!");
+                        break;
+                    }
                     for (String s:subsGroupsIDs){
                         if(!subsGroupsNames.contains(groups.get(Integer.parseInt(s)-1)))
                             subsGroupsNames.add(groups.get(Integer.parseInt(s)-1));
