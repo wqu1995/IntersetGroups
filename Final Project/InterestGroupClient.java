@@ -131,6 +131,17 @@ public class InterestGroupClient {
                         System.out.println("Invalid command.");
                     break;
                 case "logout":
+                    outToServer.writeBytes("logout");
+                    PrintWriter writer = new PrintWriter(userName+".txt", "UTF-8");
+                    String subG="";
+                    for(String s:subsGroupsIDs)
+                        subG=subG+s+" ";
+                    String readPo="";
+                    for (String s:readPosts)
+                        readPo=readPo+s+" ";
+                    writer.println(subG);
+                    writer.println(readPo);
+                    writer.close();
                     logIn=false;
                     break;
                 default:
@@ -698,6 +709,7 @@ public class InterestGroupClient {
             inFromServer.readLine();
             String subject=inFromServer.readLine();
             String group=inFromServer.readLine();
+            inFromServer.readLine();
             return "There is a new post: "+subject+" in group: "+group;
         }
         return null;
