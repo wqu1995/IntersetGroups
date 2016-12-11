@@ -242,7 +242,7 @@ public class InterestGroupClient {
                     while (!contentLine.equals("."))
                         postContent=postContent+contentLine+"\r\n";
                     postContent=postContent+".\r\n";
-                    NP(postContent);
+                    NP(postContent,groups.indexOf(groupName));
                     System.out.println("New post posted!");
                     System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
                     for( j=1;j<=currentN;j++){
@@ -577,8 +577,8 @@ public class InterestGroupClient {
         return null;
     }
 
-    private static void NP(String post) throws IOException {
-        outToServer.writeBytes("NP GroupID IGP\r\n\r\n");
+    private static void NP(String post,int groupID) throws IOException {
+        outToServer.writeBytes("NP "+groupID+" IGP\r\n\r\n");
         outToServer.writeBytes(post+"\r\n\r\n");
         if(inFromServer.readLine().equals("IGP 320 Created"))
             inFromServer.readLine();
