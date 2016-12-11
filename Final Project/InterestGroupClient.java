@@ -61,6 +61,8 @@ public class InterestGroupClient {
             else if(sentence.split(" ")[0].equals("login")) {
                 // read user info and store them into two sets.
                 userName=sentence.split(" ")[1];
+                //  outToServer.writeBytes("LOGIN IGP hihow are you\r\n");
+
                 LogIn(userName);
                 // send the AG IGP request and store all the groups' info in groups array
                 AG();
@@ -85,6 +87,7 @@ public class InterestGroupClient {
                         System.out.println("Invalid command.");
                     break;
                 case "sg":
+
                     for (String s:subsGroupsIDs){
                         if(!subsGroupsNames.contains(groups.get(Integer.parseInt(s)-1)))
                             subsGroupsNames.add(groups.get(Integer.parseInt(s)-1));
@@ -125,21 +128,9 @@ public class InterestGroupClient {
                     break;
                 case "logout":
                     logIn=false;
-                    PrintWriter writer = new PrintWriter(userName+".txt", "UTF-8");
-                    String subG="";
-                    for(String s:subsGroupsIDs)
-                        subG=subG+s+" ";
-                    writer.println(subG);
-                    String readPo="";
-                    for (String s:readPosts)
-                        readPo=readPo+s+" ";
-                    writer.println(readPo);
-                    writer.close();
-                    System.out.println("Exit Interest Group.");
-                    outToServer.writeBytes("logout\r\n\r\n");
                     break;
                 default:
-                    System.out.println("Invalid Command.");break;
+                    System.out.println("Invalid Command.");
             }
         }
         // close the socket
@@ -165,7 +156,11 @@ public class InterestGroupClient {
         if(sTemp!=null)
             System.out.println(sTemp);
         for( j=1;j<=currentN;j++,i++){
-            if(postSubjects.size()==i-1){
+            if(postSubjects.size()==i){
+                if(i>newPostNum)
+                    System.out.println(j+".     "+readSubjects.get(i-newPostNum-1));
+                else
+                    System.out.println(j+".N    "+unreadSubjects.get(i-1));
                 showedAll=true;
                 break;
             }
@@ -185,7 +180,11 @@ public class InterestGroupClient {
                     String num=command.split(" ")[1];
                     if(num.length()==1){
                         int index=Integer.parseInt(num);
-                        int trueIndex=i-currentN+index-1;
+                        int trueIndex;
+                        if(i>currentN)
+                            trueIndex=i-currentN+index-1;
+                        else
+                            trueIndex=index;
                         if(trueIndex>newPostNum)
                             break;
                         else {
@@ -195,6 +194,14 @@ public class InterestGroupClient {
                             newPostNum--;
                             System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
                             for( j=1;j<=currentN;j++){
+                                if(postSubjects.size()==i){
+                                    if(trueIndex-index+j>newPostNum)
+                                        System.out.println(j+".     "+readSubjects.get(trueIndex-index+j-newPostNum-1));
+                                    else
+                                        System.out.println(j+".N    "+unreadSubjects.get(trueIndex-index+j-1));
+                                    showedAll=true;
+                                    break;
+                                }
                                 if(trueIndex-index+j>newPostNum)
                                     System.out.println(j+".     "+readSubjects.get(trueIndex-index+j-newPostNum-1));
                                 else
@@ -205,8 +212,16 @@ public class InterestGroupClient {
                     else if(num.length()==3){
                         int firstIndex=Integer.parseInt(num.substring(0,1));
                         int lastIndex=Integer.parseInt(num.substring(2,3));
-                        int trueIndex1=i-currentN+firstIndex-1;
-                        int trueIndex2=i-currentN+lastIndex-1;
+                        int trueIndex1;
+                        if(i>currentN)
+                            trueIndex1=i-currentN+firstIndex-1;
+                        else
+                            trueIndex1=firstIndex;
+                        int trueIndex2;
+                        if(i>currentN)
+                            trueIndex2=i-currentN+lastIndex-1;
+                        else
+                            trueIndex2=lastIndex;
                         if(trueIndex2>newPostNum)
                             break;
                         else {
@@ -221,6 +236,14 @@ public class InterestGroupClient {
                             }
                             System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
                             for( j=1;j<=currentN;j++){
+                                if(postSubjects.size()==i){
+                                    if(trueIndex1-firstIndex+j>newPostNum)
+                                        System.out.println(j+".     "+readSubjects.get(trueIndex1-firstIndex+j-newPostNum-1));
+                                    else
+                                        System.out.println(j+".N    "+unreadSubjects.get(trueIndex1-firstIndex+j-1));
+                                    showedAll=true;
+                                    break;
+                                }
                                 if(trueIndex1-firstIndex+j>newPostNum)
                                     System.out.println(j+".     "+readSubjects.get(trueIndex1-firstIndex+j-newPostNum-1));
                                 else
@@ -239,13 +262,23 @@ public class InterestGroupClient {
                     postContent=postContent+"Subject: "+subject+"\r\nAuthor: "+userName+"\r\nDate: "+new Date()+"\r\n\r\n";
                     System.out.println("Please enter content of the post, it ends by a dot by itself on a line");
                     String contentLine=inFromUser.readLine();
-                    while (!contentLine.equals("."))
+                    while (!contentLine.equals(".")){
                         postContent=postContent+contentLine+"\r\n";
+                        contentLine=inFromUser.readLine();
+                    }
                     postContent=postContent+".\r\n";
                     NP(postContent,groups.indexOf(groupName));
                     System.out.println("New post posted!");
                     System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
                     for( j=1;j<=currentN;j++){
+                        if(postSubjects.size()==i){
+                            if(i-currentN+j-1>newPostNum)
+                                System.out.println(j+".     "+readSubjects.get(i-currentN+j-newPostNum-2));
+                            else
+                                System.out.println(j+".N    "+unreadSubjects.get(i-currentN+j-2));
+                            showedAll=true;
+                            break;
+                        }
                         if(i-currentN+j-1>newPostNum)
                             System.out.println(j+".     "+readSubjects.get(i-currentN+j-newPostNum-2));
                         else
@@ -262,7 +295,11 @@ public class InterestGroupClient {
                     }
                     System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
                     for( j=1;j<=currentN;j++,i++){
-                        if(postSubjects.size()==i-1){
+                        if(postSubjects.size()==i){
+                            if(i>newPostNum)
+                                System.out.println(j+".     "+readSubjects.get(i-newPostNum-1));
+                            else
+                                System.out.println(j+".N    "+unreadSubjects.get(i-1));
                             showedAll=true;
                             break;
                         }
@@ -282,25 +319,43 @@ public class InterestGroupClient {
                         }
                         String postToRead;
                         int id=Integer.parseInt(command);
-                        int trueID=i-currentN+id-1;
-                        if(trueID>newPostNum)
-                            postToRead=readSubjects.get(trueID-newPostNum-1);
+                        int trueID;
+                        if(i>currentN)
+                            trueID=i-currentN+id-1;
                         else
-                            postToRead=unreadSubjects.get(trueID-1);
+                            trueID=id;
+                        if(trueID>newPostNum)
+                            postToRead=readSubjects.remove(trueID-newPostNum-1);
+                        else
+                            postToRead=unreadSubjects.remove(trueID-1);
+                        if(trueID<=newPostNum){
+                            newPostNum--;
+                            readSubjects.add(0,postToRead);
+                            readPosts.add(postToRead.split(" ")[0]);
+                        }
                         RP(postToRead.split(" ")[0]);
                         rp(currentN);
                         System.out.println("Read Group. Please enter one of the subcommands: [id],r,n,p,q");
                         for( j=1;j<=currentN;j++){
+                            if(postSubjects.size()==trueID-id+j){
+                                if(trueID-id+j>newPostNum)
+                                    System.out.println(j+".     "+readSubjects.get(trueID-id+j-newPostNum-1));
+                                else
+                                    System.out.println(j+".N    "+unreadSubjects.get(trueID-id+j-1));
+                                showedAll=true;
+                                break;
+                            }
                             if(trueID-id+j>newPostNum)
                                 System.out.println(j+".     "+readSubjects.get(trueID-id+j-newPostNum-1));
                             else
                                 System.out.println(j+".N    "+unreadSubjects.get(trueID-id+j-1));
                         }
                     }
-                   catch (Exception e){
-                       System.out.println("Invalid command.");break;
-                   }
-                   break;
+                    catch (Exception e){
+                        e.printStackTrace();
+                        System.out.println("Invalid command.");break;
+                    }
+                    break;
             }
         }
         System.out.println("Exit read group. Please enter one of the commands: \"ag\",\"sg\",\"rg\",\"help\",or \"logout\"");
@@ -309,33 +364,38 @@ public class InterestGroupClient {
     private static void rp(int currentN) throws IOException {
         boolean rp=true,showedAll=false;
         System.out.println("Read post. two sub-sub-commands: n,q");
-        int line=0;
+        int line=1;
         for(int q=1;q<=currentN;q++,line++) {
-            if (line==contents.size()-1) {
+            if (line==contents.size()) {
+                System.out.println(contents.get(line-1));
                 showedAll = true;
                 break;
             }
-            System.out.println(contents.get(line));
+            System.out.println(contents.get(line-1));
         }
-        String subcommand=inFromUser.readLine();
+
         while (rp){
+            String subcommand=inFromUser.readLine();
             switch (subcommand){
                 case "n":
                     if(showedAll) {
+                        System.out.print("Post ends. ");
                         rp = false;break;
                     }
                     for(int q=1;q<=currentN;q++,line++) {
-                        if (line==contents.size()-1) {
+                        if (line==contents.size()) {
+                            System.out.println(contents.get(line-1));
                             showedAll = true;
                             break;
                         }
-                        System.out.println(contents.get(line));
+                        System.out.println(contents.get(line-1));
                     }
                     break;
                 case "q":
                     rp=false;break;
             }
         }
+        System.out.println("Exit read post.");
     }
 
     private static void sg(int n) throws IOException {
@@ -347,7 +407,11 @@ public class InterestGroupClient {
         if(sTemp!=null)
             System.out.println(sTemp);
         for( i=1;i<=currentN;i++){
-            if(subsGroupsIDs.size()==i-1){
+            if(subsGroupsIDs.size()==i){
+                if(Integer.parseInt(newPosts.get(i-1))==0)
+                    System.out.println(i+"         "+subsGroupsNames.get(i-1));
+                else
+                    System.out.println(i+"    "+newPosts.get(i-1)+"   "+subsGroupsNames.get(i-1));
                 showedAll=true;
                 break;
             }
@@ -384,7 +448,11 @@ public class InterestGroupClient {
                         }
                         System.out.println("You have successfully unsubscribed these groups. Please enter next command.");
                         for( int j=i-currentN;j<i;j++){
-                            if(subsGroupsIDs.size()==j-1){
+                            if(subsGroupsIDs.size()==j){
+                                if(Integer.parseInt(newPosts.get(j-1))==0)
+                                    System.out.println(j+"         "+subsGroupsNames.get(j-1));
+                                else
+                                    System.out.println(j+"    "+newPosts.get(j-1)+"   "+subsGroupsNames.get(j-1));
                                 showedAll=true;
                                 break;
                             }
@@ -409,7 +477,11 @@ public class InterestGroupClient {
                     }
                     System.out.println("Subscribed Groups. Please enter one of the subcommands: u,n,q");
                     for( int j=i;j<currentN+i;j++){
-                        if(subsGroupsIDs.size()==j-1){
+                        if(subsGroupsIDs.size()==j){
+                            if(Integer.parseInt(newPosts.get(j-1))==0)
+                                System.out.println(j+"         "+subsGroupsNames.get(j-1));
+                            else
+                                System.out.println(j+"    "+newPosts.get(j-1)+"   "+subsGroupsNames.get(j-1));
                             showedAll=true;
                             break;
                         }
@@ -431,16 +503,24 @@ public class InterestGroupClient {
     }
 
     private static void ag(int n) throws IOException {
+        for(String x : groups){
+            System.out.println(x);
+        }
         boolean showedAll=false,ag=true;boolean wrongIndex=false;
         int i,currentN=n;
         ArrayList<String> temporaryGroups=new ArrayList();
         System.out.println("All Groups. Please enter one of the subcommands: s,u,n,q");
         //Check if there is new post from subscribed groups.
+
         String sTemp=CK();
         if(sTemp!=null)
             System.out.println(sTemp);
         for( i=1;i<=currentN;i++){
-            if(groups.size()==i-1){
+            if(groups.size()==i){
+                if(subsGroupsIDs.contains(i+""))
+                    System.out.println(i+". (s) "+groups.get(i-1));
+                else
+                    System.out.println(i+". ( ) "+groups.get(i-1));
                 showedAll=true;
                 break;
             }
@@ -456,6 +536,7 @@ public class InterestGroupClient {
                     try {
 
                         for(String s:command.substring(2,command.length()).split(" ")) {
+                            System.out.println(s);
                             if(Integer.parseInt(s)>=i||Integer.parseInt(s)<i-currentN){
                                 System.out.println("group not in the list!");
                                 wrongIndex=true;
@@ -478,6 +559,14 @@ public class InterestGroupClient {
                         temporaryGroups.clear();
                         System.out.println("You have successfully subscribed these groups. Please enter next command.");
                         for( int q=i-currentN;q<i;q++){
+                            if(groups.size()==i){
+                                if(subsGroupsIDs.contains(i+""))
+                                    System.out.println(i+". (s) "+groups.get(q-1));
+                                else
+                                    System.out.println(i+". ( ) "+groups.get(q-1));
+                                showedAll=true;
+                                break;
+                            }
                             if(subsGroupsIDs.contains(q+""))
                                 System.out.println(q+". (s) "+groups.get(q-1));
                             else
@@ -514,6 +603,14 @@ public class InterestGroupClient {
                         temporaryGroups.clear();
                         System.out.println("You have successfully unsubscribed these groups. Please enter next command.");
                         for( int q=i-currentN;q<i;q++){
+                            if(groups.size()==i){
+                                if(subsGroupsIDs.contains(i+""))
+                                    System.out.println(i+". (s) "+groups.get(q-1));
+                                else
+                                    System.out.println(i+". ( ) "+groups.get(q-1));
+                                showedAll=true;
+                                break;
+                            }
                             if(subsGroupsIDs.contains(q+""))
                                 System.out.println(q+". (s) "+groups.get(q-1));
                             else
@@ -526,6 +623,7 @@ public class InterestGroupClient {
                     }
                     break;
                 case "n":
+
                     sTemp=CK();
                     if(sTemp!=null)
                         System.out.println(sTemp);
@@ -535,7 +633,11 @@ public class InterestGroupClient {
                     }
                     System.out.println("All Groups. Please enter one of the subcommands: s,u,n,q");
                     for( int j=i;j<currentN+i;j++){
-                        if(groups.size()==j-1){
+                        if(groups.size()==j){
+                            if(subsGroupsIDs.contains(j+""))
+                                System.out.println(j+". (s) "+groups.get(j-1));
+                            else
+                                System.out.println(j+". ( ) "+groups.get(j-1));
                             showedAll=true;
                             break;
                         }
@@ -578,8 +680,8 @@ public class InterestGroupClient {
     }
 
     private static void NP(String post,int groupID) throws IOException {
-        outToServer.writeBytes("NP "+groupID+" IGP\r\n\r\n");
-        outToServer.writeBytes(post+"\r\n\r\n");
+        outToServer.writeBytes("NP "+(groupID+1)+" IGP\r\n\r\n");
+        outToServer.writeBytes(post+"\r\n");
         if(inFromServer.readLine().equals("IGP 320 Created"))
             inFromServer.readLine();
 
@@ -591,17 +693,17 @@ public class InterestGroupClient {
             inFromServer.readLine();
             contents=new ArrayList<>();
             String s=inFromServer.readLine();
-            while (!s.isEmpty()){
-                    contents.add(s);
+            while (!s.equals(".")){
+                contents.add(s);
                 s=inFromServer.readLine();
             }
         }
     }
 
     private static boolean RG(String gname) throws IOException {
-        if(!groups.contains(gname))
+        if(!subsGroupsIDs.contains(groups.indexOf(gname)+1))
             return false;
-        outToServer.writeBytes("RG "+gname+" IGP\r\n\r\n");
+        outToServer.writeBytes("RG "+(groups.indexOf(gname)+1)+" IGP\r\n\r\n");
         if(inFromServer.readLine().equals("IGP 207 OK")){
             inFromServer.readLine();
             postSubjects=new ArrayList<>();
@@ -625,9 +727,14 @@ public class InterestGroupClient {
             readP=readP+s+" ";
         outToServer.writeBytes("Read-Posts: "+readP+"\r\n\r\n");
         newPosts=new ArrayList<>();
-        if(inFromServer.readLine().equals("IGP 207 OK")){
-            inFromServer.readLine();
+        String temp = inFromServer.readLine();
+        System.out.println(temp);
+        if(temp.equals("IGP 207 OK")){
+            String a =inFromServer.readLine();
+
+
             String newP=inFromServer.readLine();
+            System.out.println(newPosts);
             for (String s:newP.split(" ")){
                 newPosts.add(s);
             }
@@ -638,13 +745,17 @@ public class InterestGroupClient {
     private static void AG() throws IOException {
         outToServer.writeBytes("AG  IGP\r\n\r\n");
         String s;
-        if(inFromServer.readLine().equals("IGP 310 All Groups")){
-            inFromServer.readLine();
+        String temp = inFromServer.readLine();
+        System.out.println(temp);
+        if(temp.equals("IGP 310 ALL Groups")){
+            System.out.println(inFromServer.readLine());
             s=inFromServer.readLine();
             while (!s.isEmpty()){
                 groups.add(s);
                 s=inFromServer.readLine();
             }
+
+
         }
     }
 
@@ -670,7 +781,8 @@ public class InterestGroupClient {
 
         Date now=new Date();
         outToServer.writeBytes("LOGIN IGP\r\n");
-        outToServer.writeBytes("Date: "+now+"\r\n\r\n");
+        outToServer.writeBytes("Date: "+now+"\r\n");
+        outToServer.writeBytes("\r\n");
         if(inFromServer.readLine().equals("IGP 214 No Content"))
             inFromServer.readLine();
     }
