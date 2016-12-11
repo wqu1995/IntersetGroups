@@ -24,18 +24,8 @@ public class InterestGroupClient {
     public static void main(String argv[]) throws Exception
     {
         String sentence;
-        String modifiedSentence;
         boolean logIn=false;
 
-        /*URL         workDirURL  = InterestGroupClient.class.getClassLoader().getResource("");
-        File userFile=new File(workDirURL.getFile());
-        userFile=new File(userFile.toString()+File.separator+"user5"+".json");
-        if(!userFile.exists())
-            userFile.createNewFile();*/
-
-        /*List<String> lines = Arrays.asList("The first line12", "The second line2");
-        Path file = Paths.get("the-file-name1.txt");
-        Files.write(file, lines, Charset.forName("UTF-8"));*/
 
         // get the server port form command line
         int lisPort = Integer.parseInt(argv[1]);
@@ -53,6 +43,7 @@ public class InterestGroupClient {
 
         // create an input stream from the socket input steram
         inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        System.out.println("Welcome to Interest Groups!");
 
         // read a line form the standard input
         while (!logIn){
@@ -77,6 +68,27 @@ public class InterestGroupClient {
             //send LOGIN request
             sentence=inFromUser.readLine();
             switch (sentence.split(" ")[0]){
+                case "help":
+                    System.out.println("Help Menu: ");
+                    System.out.println("login:  Take an argument of username and Sign into the application ");
+                    System.out.println("ag: Take an argument of N , select N groups at a time and list names of these groups ");
+                    System.out.println("\ts: Subscribe to groups");
+                    System.out.println("\tu: Unsubscribe to groups");
+                    System.out.println("\tn: List the next N discussion groups ");
+                    System.out.println("\tq: Exits from the ag command");
+                    System.out.println("sg: Take an argument of N, select N subscribe groups at a time \nand list names of these subscribe groups ");
+                    System.out.println("\tu: Unsubscribe to subscibe groups");
+                    System.out.println("\tn: List the next N discussion subscibe groups ");
+                    System.out.println("\tq: Exits from the sg command");
+                    System.out.println("rg: Take one mandatory argument gname and an optional argument\n select the special group and list all the posts in the group ");
+                    System.out.println("\t[id]: list one special post and read the content of it");
+                    System.out.println("\t\tn: display at most N more lines of the post content");
+                    System.out.println("\t\tq: quit displaying the post content ");
+                    System.out.println("\tr: choose one or a range of numbers to read one special post or several posts ");
+                    System.out.println("\tn: list the next N posts ");
+                    System.out.println("\tp: post to the group");
+                    System.out.println("\tq: exits from the rg command");
+                    break;
                 case "ag":
                     if(sentence.split(" ").length==1)
                         ag(N);// take user to ag interface
@@ -143,6 +155,7 @@ public class InterestGroupClient {
                     writer.println(readPo);
                     writer.close();
                     logIn=false;
+                    System.out.println("You have successfully log out from Interest Groups.");
                     break;
                 default:
                     System.out.println("Invalid Command.");
@@ -451,7 +464,7 @@ public class InterestGroupClient {
                     try {
                         ArrayList temporaryGroups=new ArrayList();
                         for(String s:command.substring(2,command.length()).split(" ")) {
-                            if(Integer.parseInt(s)>=i||Integer.parseInt(s)<i-currentN){
+                            if(Integer.parseInt(s)>i||Integer.parseInt(s)<i-currentN){
                                 System.out.println("group not in the list!");
                                 wrongIndex=true;
                                 break;
@@ -568,7 +581,7 @@ public class InterestGroupClient {
 
                         for(String s:command.substring(2,command.length()).split(" ")) {
                             System.out.println(s);
-                            if(Integer.parseInt(s)>=i||Integer.parseInt(s)<i-currentN){
+                            if(Integer.parseInt(s)>i||Integer.parseInt(s)<i-currentN){
                                 System.out.println("group not in the list!");
                                 wrongIndex=true;
                                 break;
@@ -615,7 +628,7 @@ public class InterestGroupClient {
                 case "u":
                     try {
                         for(String s:command.substring(2,command.length()).split(" ")) {
-                            if(Integer.parseInt(s)>=i||Integer.parseInt(s)<i-currentN){
+                            if(Integer.parseInt(s)>i||Integer.parseInt(s)<i-currentN){
                                 System.out.println("group not in the list!");
                                 wrongIndex=true;
                                 break;
